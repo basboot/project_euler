@@ -1,5 +1,6 @@
 import sys
-sys.setrecursionlimit(20000)
+sys.setrecursionlimit(2000)
+from cvxpy.expressions.cvxtypes import expression
 
 # S(Z)(A)(0)
 
@@ -8,15 +9,18 @@ sys.setrecursionlimit(20000)
 # S(u)(v)(w) => v(u(v)(w))
 
 # l_expression = ["S", ["Z"], ["A"], [0]] # 1
-# l_expression = ["S", ["S"], ["S", ["S"]], ["S", ["Z"]], ["A"], [0]] # 6
-l_expression = ["S", ["S"], ["S", ["S"]], ["S", ["S"]], ["S", ["Z"]], ["A"], [0]] # ?
+l_expression = ["S", ["S"], ["S", ["S"]], ["S", ["Z"]], ["A"], [0]] # 6
+# l_expression = ["S", ["S"], ["S", ["S"]], ["S", ["S"]], ["S", ["Z"]], ["A"], [0]] # ?
 
-def process_single_expression(expression):
-    expression = list(expression)
+def process_single_expression(original_expression):
+
+    restart = True
+    expression = original_expression
+
 
     for i in range(len(expression) - 1, -1, -1):
         if isinstance(expression[i], list):
-            expression[i] = process_single_expression(tuple(expression[i]))
+            expression[i] = process_single_expression(expression[i])
 
         match (expression[i], len(expression) - i - 1):
             case ("A", x) if x > 0:
@@ -43,13 +47,10 @@ def process_single_expression(expression):
                     expression[i:i] = v + [u + [v] + [w]]
 
 
+    return original_expression
 
-
-
-
-    return expression
-
+print(l_expression)
 while len(l_expression) > 1:
-    l_expression = process_single_expression(tuple(l_expression))
-    print(len(l_expression))
+    l_expression = process_single_expression(l_expression)
+    print(l_expression)
     # exit()
